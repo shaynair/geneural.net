@@ -1,0 +1,29 @@
+{
+  "name": "genetic-tetris",
+  "version": "1.0.0",
+  "description": "Simulates 3D tetris by using weights for a genetic algorithm.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shaynair/Genetic-Tetris-Three.git"
+  },
+  "keywords": [
+    "genetic",
+    "tetris",
+    "three",
+    "dimensional",
+    "algorithm"
+  ],
+  "author": "RU_MADBRO?",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/shaynair/Genetic-Tetris-Three/issues"
+  },
+  "homepage": "https://github.com/shaynair/Genetic-Tetris-Three#readme",
+  "dependencies": {
+    "three": "^0.84.0"
+  }
+}
