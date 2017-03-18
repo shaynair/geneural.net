@@ -4,6 +4,8 @@ const BOUNDS = {
     splitZ: 20
 };
 
+const INIT_Z = 20;
+
 const COLLISION = { NONE: 0, WALL: 1, GROUND: 2 };
 const FIELD = { EMPTY: 0, ACTIVE: 1, PETRIFIED: 2 };
 
@@ -41,6 +43,7 @@ const CUBE_SHAPES = [
 // --------------------------------
 
 const THREE = require('three');
+const Base64 = require('js-base64').Base64;
 
 let Tetris = {
     currentPoints: 0,
@@ -49,10 +52,22 @@ let Tetris = {
 
     heuristics: {},
 
+    movesDone: [],
+
     init: function(heuristics) {
         this.Board.init(BOUNDS.splitX, BOUNDS.splitY, BOUNDS.splitZ);
         this.heuristics = heuristics;
-        return this.start();
+        return JSON.stringify({ score: this.start(), moves: this.generateCode() });
+    },
+    generateCode: function() {
+        let code = "";
+        for (let m of this.movesDone) {
+            code += m.position.x + "|" + m.position.y + "|" + m.position.z;
+            code += ",";
+            code += Math.floor(m.rotation.x / 90) + "|" + Math.floor(m.rotation.y / 90) + "|" + Math.floor(m.rotation.z / 90);
+            code += ";";
+        }
+        return Base64.encodeURI(code.length > 0 ? code.substring(0, code.length - 1) : code);
     },
     start: function() {
         this.Block.generate();
@@ -84,14 +99,16 @@ let Tetris = {
         if (best === null) {
             return false;
         }
-        this.Block.rotate(move.rotation.x, move.rotation.y, move.rotation.z);
-        this.Block.move(move.position.x - this.Block.position.x, move.position.y - this.Block.position.y, 0);
+        console.log("Rotate " + JSON.stringify(best.rotation) + ", Move " + JSON.stringify(best.position));
+        this.Block.rotate(best.rotation.x, best.rotation.y, best.rotation.z);
+        this.Block.move(best.position.x - this.Block.position.x, best.position.y - this.Block.position.y, 0);
+        this.movesDone.push(best);
         return true;
     },
     allMoves: function() {
         let moves = [];
         let rotations = this.Block.possibleRotations();
-        for (let i = 0; i < rotations.rotate.length; i++) {
+        for (let i = 0; i < rotations.rotates.length; i++) {
             let rotation = rotations.rotates[i];
             let shape = rotations.shapes[i];
             for (let x = 0; x < this.Board.fields.length; x++) {
@@ -109,10 +126,10 @@ let Tetris = {
         return this.Heuristic.utility(this.Board.fields, this.heuristics);
     },
     Heuristic: {
-        utility: (fields, heuristics) => {
+        utility: function(fields, heuristics) {
             let s = 0;
             for (let key in heuristics) {
-                if (heuristics.hasOwnProperty(key) && this.hasOwnProperty(key)) {
+                if (heuristics.hasOwnProperty(key) && typeof this[key] === 'function') {
                     s += this[key](fields) * heuristics[key];
                 }
             }
@@ -124,9 +141,9 @@ let Tetris = {
             for (let x = 0; x < fields.length; x++) {
                 for (let y = 0; y < fields[x].length; y++) {
                     for (let z = fields[x][y].length - 1; z >= 0; z--) {
-                        if (block_in_col && fields[x][y][z] === Field.EMPTY) {
+                        if (block_in_col && fields[x][y][z] === FIELD.EMPTY) {
                             holes.push({ x, y, z });
-                        } else if (fields[x][y][z] !== Field.EMPTY) {
+                        } else if (fields[x][y][z] !== FIELD.EMPTY) {
                             block_in_col = true;
                         }
                     }
@@ -149,14 +166,14 @@ let Tetris = {
             }
             return heights;
         },
-        num_holes: (fields = Tetris.Board.fields) => {
+        num_holes: function(fields = Tetris.Board.fields) {
             return this._holes_in_board(fields).length;
         },
-        num_blocks_above_holes: (fields = Tetris.Board.fields) => {
+        num_blocks_above_holes: function(fields = Tetris.Board.fields) {
             let c = 0;
             for (let hole of this._holes_in_board(fields)) {
                 for (let z = hole.z + 1; z < fields[0][0].length; z++) {
-                    if (fields[hole.x][hole.y][z] !== Field.EMPTY) {
+                    if (fields[hole.x][hole.y][z] !== FIELD.EMPTY) {
                         c++;
                     } else {
                         break;
@@ -165,7 +182,7 @@ let Tetris = {
             }
             return c;
         },
-        num_gaps: (fields = Tetris.Board.fields) => {
+        num_gaps: function(fields = Tetris.Board.fields) {
             let gaps = 0;
             for (let z = 0; z < fields[0][0].length; z++) {
                 for (let y = 0; y < fields[0].length; y++) {
@@ -193,7 +210,7 @@ let Tetris = {
             }
             return gaps;
         },
-        max_height: (fields = Tetris.Board.fields) => {
+        max_height: function(fields = Tetris.Board.fields) {
             for (let z = fields[0][0].length; z >= 0; z--) {
                 for (let y = 0; y < fields[0].length; y++) {
                     for (let x = 0; x < fields.length; x++) {
@@ -205,11 +222,11 @@ let Tetris = {
             }
             return 0;
         },
-        avg_height: (fields = Tetris.Board.fields) => {
+        avg_height: function(fields = Tetris.Board.fields) {
             let obj = this._heights(fields);
             return Object.keys(obj).map(o => obj[o]).reduce((a, b) => a + b, 0) / Object.keys(obj).length;
         },
-        num_blocks: (fields = Tetris.Board.fields) => {
+        num_blocks: function(fields = Tetris.Board.fields) {
             let c = 0;
             for (let z = fields[0][0].length; z >= 0; z--) {
                 for (let y = 0; y < fields[0].length; y++) {
@@ -222,10 +239,10 @@ let Tetris = {
             }
             return c;
         },
-        completed_lines: (fields = Tetris.Board.fields) => {
+        completed_lines: function(fields = Tetris.Board.fields) {
             return Tetris.Board.checkCompleted(fields).length;
         },
-        bumpiness: (fields = Tetris.Board.fields) => {
+        bumpiness: function(fields = Tetris.Board.fields) {
             let total_bumpy = 0;
             let obj = this._heights(fields);
             for (let y = 0; y < fields[0].length; y++) {
@@ -392,7 +409,7 @@ Tetris.Board = {
             for (let y = 0; y < _y; y++) {
                 fields[x].push([]);
                 for (let z = 0; z < _z; z++) {
-                    this.fields[x][y].push(FIELD.EMPTY);
+                    fields[x][y].push(FIELD.EMPTY);
                 }
             }
         }

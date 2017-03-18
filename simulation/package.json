@@ -4,7 +4,8 @@
   "description": "Simulates 3D tetris by using weights for a genetic algorithm.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,8 @@
   },
   "homepage": "https://github.com/shaynair/Genetic-Tetris-Three#readme",
   "dependencies": {
+    "js-base64": "^2.1.9",
+    "minimist": "^1.2.0",
     "three": "^0.84.0"
   }
 }

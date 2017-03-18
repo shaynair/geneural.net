@@ -1,3 +1,3 @@
 const tetris = require('./tetris');
-
-console.log(tetris.init());
+var argv = require('minimist')(process.argv.slice(2));
+console.log(tetris.init(argv));
