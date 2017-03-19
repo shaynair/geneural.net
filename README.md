@@ -61,7 +61,7 @@ Genetic algorithm will run until 1000 generations by default. This can be config
 
 ### Running the web server
 
-1. (Make sure this one is in the virtual environment `env`) `python3 genetic/runserver.py`
+1. (Make sure this one is in the virtual environment `env`) `python3 genetic/webserver.py`
 
 Server will be visible, by default, on [port 80 on localhost](http://localhost:80). You can compare it to our [web server](http://geneural.net) for reference.
 
