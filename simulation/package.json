@@ -27,6 +27,8 @@
   "dependencies": {
     "js-base64": "^2.1.9",
     "minimist": "^1.2.0",
-    "three": "^0.84.0"
+    "three": "^0.84.0",
+    "zerorpc": "^0.9.7",
+    "zmq": "^2.15.3"
   }
 }

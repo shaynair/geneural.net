@@ -46,16 +46,11 @@ const THREE = require('three');
 const Base64 = require('js-base64').Base64;
 
 let Tetris = {
-    currentPoints: 0,
-
-    gameOver: false,
-
-    heuristics: {},
-
-    movesDone: [],
-
     init: function(heuristics) {
         this.Board.init(BOUNDS.splitX, BOUNDS.splitY, BOUNDS.splitZ);
+        this.movesDone = [];
+        this.gameOver = false;
+        this.currentPoints = 0;
         this.heuristics = heuristics;
         return JSON.stringify({ score: this.start(), moves: this.generateCode() });
     },
@@ -129,7 +124,7 @@ let Tetris = {
         utility: function(fields, heuristics) {
             let s = 0;
             for (let key in heuristics) {
-                if (heuristics.hasOwnProperty(key) && typeof this[key] === 'function') {
+                if (!/^_/.test(key) && heuristics.hasOwnProperty(key) && typeof this[key] === 'function') {
                     s += this[key](fields) * heuristics[key];
                 }
             }
@@ -290,7 +285,6 @@ let Tetris = {
 };
 
 Tetris.Block = {
-    position: {},
     generate: function() {
         let type = Math.floor(Math.random() * (CUBE_SHAPES.length));
         this.blockType = type;
@@ -401,7 +395,6 @@ Tetris.Block = {
 };
 
 Tetris.Board = {
-    fields: [],
     initFields: function(_x, _y, _z) {
         let fields = [];
         for (let x = 0; x < _x; x++) {

@@ -1,3 +1,17 @@
 const tetris = require('./tetris');
-var argv = require('minimist')(process.argv.slice(2));
-console.log(tetris.init(argv));
+const zerorpc = require('zerorpc');
+
+const server = new zerorpc.Server({
+    simulate: function(heuristics, cb) {
+        console.log("Heuristics: ", heuristics);
+        cb(null, tetris.init(JSON.parse(heuristics)));
+    }
+});
+
+server.bind("tcp://0.0.0.0:3000");
+
+server.on("error", (error) => {
+    console.error("server: ", error);
+});
+
+console.log("Listening on port 3000.");
