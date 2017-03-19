@@ -7,10 +7,7 @@ const BOUNDS = {
     splitZ: 20
 };
 const MESH = { color: 0xffaa00, wireframe: true };
-const WIDTH = window.innerWidth,
-    HEIGHT = window.innerHeight;
 const VIEW_ANGLE = 45,
-    ASPECT = WIDTH / HEIGHT,
     NEAR = 0.1,
     FAR = 10000,
     CAMERA_Z = 600,
@@ -62,7 +59,14 @@ const CUBE_SHAPES = [
 // --------------------------------
 
 window.Tetris = {
-    init: function() {
+    init: function(hash = window.location.hash) {
+        WIDTH = window.innerWidth;
+        HEIGHT = window.innerHeight;
+        if (hash && hash.length > 0) {
+            WIDTH *= 0.8;
+            HEIGHT *= 0.6;
+        }
+
         this.currentPoints = 0;
         this.sounds = {};
         this.frameTime = 0;
@@ -73,13 +77,9 @@ window.Tetris = {
         this.staticBlocks = [];
         this.automatic = [];
 
-        this.sounds.collision = document.getElementById("audio_collision");
-        this.sounds.move = document.getElementById("audio_move");
-        this.sounds.gameover = document.getElementById("audio_gameover");
-        this.sounds.score = document.getElementById("audio_score");
 
         this.renderer = new THREE.WebGLRenderer();
-        this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+        this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, WIDTH / HEIGHT, NEAR, FAR);
         this.scene = new THREE.Scene();
 
         // the camera starts at 0,0,0 so pull it back
@@ -101,16 +101,20 @@ window.Tetris = {
         ));
 
         this.render();
+        if (!hash || hash.length <= 1) {
+            this.sounds.collision = document.getElementById("audio_collision");
+            this.sounds.move = document.getElementById("audio_move");
+            this.sounds.gameover = document.getElementById("audio_gameover");
+            this.sounds.score = document.getElementById("audio_score");
 
-        $("#play_button").click((event) => {
-            event.preventDefault();
-            this.start();
-        });
-
-        // Decode
-        if (window.location.hash && window.location.hash.length > 1) {
+            $("#play_button").click((event) => {
+                event.preventDefault();
+                this.start();
+            });
+        } else {
+            // Decode
             try {
-                let decoded = atob(window.location.hash.substr(1));
+                let decoded = atob(hash.substr(1));
                 for (let move of decoded.split(";")) {
                     let ob = move.split(",");
                     let shape = parseInt(ob[0]);
@@ -121,12 +125,16 @@ window.Tetris = {
                 }
             } catch (e) {
                 console.error(e);
+                return;
             }
+            this.start();
         }
     },
     start: function() {
-        $("#menu").css("display", "none");
-        $("#points").css("display", "block");
+        if (this.automatic.length === 0) {
+            $("#menu").css("display", "none");
+            $("#points").css("display", "block");
+        }
 
         this.Block.generate();
         this.animate();
@@ -367,11 +375,11 @@ Tetris.Board = {
     init: function(_x, _y, _z) {
         this.fields = [];
         for (let x = 0; x < _x; x++) {
-            this.fields[x] = [];
+            this.fields.push([]);
             for (let y = 0; y < _y; y++) {
-                this.fields[x][y] = [];
+                this.fields[x].push([]);
                 for (let z = 0; z < _z; z++) {
-                    this.fields[x][y][z] = FIELD.EMPTY;
+                    this.fields[x][y].push(FIELD.EMPTY);
                 }
             }
         }
@@ -444,5 +452,3 @@ Tetris.Board = {
         }
     }
 };
-
-$(document).ready(Tetris.init.bind(Tetris));

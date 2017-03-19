@@ -2,3 +2,5 @@ env
 env2
 *.pyc
 __pycache__
+genetic/file.txt
+genetic/file2.txt
