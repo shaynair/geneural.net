@@ -130,8 +130,8 @@ let Tetris = {
         return moves;
     },
     finished: function() {
-        console.log("Lasted " + this.movesDone.length);
-        return this.movesDone.length; //this.Heuristic.utility(this.Board.fields, this.heuristics);
+        console.log("Lasted " + this.movesDone.length + ", got " + this.currentPoints);
+        return this.currentPoints; //this.movesDone.length; //this.Heuristic.utility(this.Board.fields, this.heuristics);
     },
     Heuristic: {
         utility: function(fields, heuristics) {

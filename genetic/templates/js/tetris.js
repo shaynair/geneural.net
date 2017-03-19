@@ -140,7 +140,7 @@ window.Tetris = {
         }
     },
     start: function() {
-        if (!this.playable || this.automatic.length === 0) {
+        if (this.playable || this.automatic.length === 0) {
             $("#menu").css("display", "none");
             $("#points").css("display", "block");
         }
