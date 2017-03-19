@@ -1,6 +1,7 @@
 import random
 import time
 #from run_simulation import Simulation
+gamesPer = 2
 totalWeights = 3
 POPULATION_SIZE = 1000
 TOTAL_GENS = 100
@@ -62,14 +63,14 @@ class GeneticAlgorithm(object):
         self.totalTime = 0
         #RUNNING GAMES AND GETTING THE SCORES FOR EACH Chromosome_______________
         for i in population:
-            i.games = 1
-            i.total_fitness = self.genScore(i.weights)
-            #print i.total_fitness
-            #(i.total_fitness, i.time) = self.genScore(i.weights)
-            #print i.avg_fitness()
+            for q in range(gamesPer):
+                i.games += 1
+                #i.total_fitness = self.genScore(i.weights)
+                i.total_fitness += self.genScore(i.weights)
+
         top = self.getTopTenPercent(population)
         for i in top:
-            self.totalScore += i.total_fitness
+            self.totalScore += i.avg_fitness()
             #self.totalTime += i.time
         print "Avg:",self.totalScore // len(top)
         #print self.totalTime / len(top)
@@ -112,11 +113,11 @@ class GeneticAlgorithm(object):
         return weightList
 
     def sortFullList(self, population):
-        return sorted(population,key = lambda x: x.total_fitness)
+        return sorted(population,key = lambda x: x.avg_fitness())
 
 
     def getTopTenPercent(self, population):
-        return sorted(population,key = lambda x: x.total_fitness)[-POPULATION_SIZE//10:]
+        return sorted(population,key = lambda x: x.avg_fitness())[-POPULATION_SIZE//10:]
 
     def getRandomTopTenPercentTopTwo(self, population):
         randomTenPercent = random.sample(population, POPULATION_SIZE//10)
