@@ -9,7 +9,6 @@
 		<meta http-equiv="cache-control" content="no-cache" />
 		<meta http-equiv="expires" content="Mon, 22 Jul 2002 11:12:01 GMT" />
 
-        <link rel="stylesheet" href="css/style.css"></link>
 		<link rel="stylesheet" type="text/css" href="https://www.highcharts.com/samples/static/highslide.css" />
 		<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 		<!--[if lt IE 9]>
@@ -17,7 +16,7 @@
 		  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 		<![endif]-->
 	</head>
-    <body>
+    <body style="margin: 0; padding: 0">
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"></script><script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 		<script src="https://code.highcharts.com/highcharts.js"></script>
 		<script src="https://code.highcharts.com/modules/data.js"></script>
@@ -28,8 +27,11 @@
         <script type="text/javascript" src="js/chart.js"></script>
 		<div id="game-container" style="width: 90%; padding: 30px; height: 55%; margin: 0 auto; text-align: center">
 		</div>
-		<div style="width: 100%; position: absolute; top: 60%; height: 40%; margin: 0 auto; text-align: center">
+		<div style="width: 100%; height: 40%; margin: 30px auto; text-align: center">
 			<div id="container" style="width: 90%; height: 90%; margin: 0 auto"></div>
+		</div>
+		<div style="width: 100%; height: 40%; margin: 30px auto; text-align: center">
+			<div id="container-weights" style="width: 90%; height: 90%; margin: 0 auto"></div>
 		</div>
 		<script>
 			$(document).ready(Tetris.init.bind(Tetris, null, false));
