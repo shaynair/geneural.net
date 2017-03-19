@@ -57,7 +57,9 @@ let Tetris = {
     generateCode: function() {
         let code = "";
         for (let m of this.movesDone) {
-            code += m.position.x + "|" + m.position.y + "|" + m.position.z;
+            code += m.shape;
+            code += ",";
+            code += m.position.x + "|" + m.position.y;
             code += ",";
             code += Math.floor(m.rotation.x / 90) + "|" + Math.floor(m.rotation.y / 90) + "|" + Math.floor(m.rotation.z / 90);
             code += ";";
@@ -94,10 +96,9 @@ let Tetris = {
         if (best === null) {
             return false;
         }
-        console.log("Rotate " + JSON.stringify(best.rotation) + ", Move " + JSON.stringify(best.position));
+        this.movesDone.push({ shape: this.Block.blockType, position: best.position, rotation: best.rotation });
         this.Block.rotate(best.rotation.x, best.rotation.y, best.rotation.z);
         this.Block.move(best.position.x - this.Block.position.x, best.position.y - this.Block.position.y, 0);
-        this.movesDone.push(best);
         return true;
     },
     allMoves: function() {
@@ -263,7 +264,7 @@ let Tetris = {
     },
     Utils: {
         cloneVector: (v) => {
-            return { x: v.x, y: v.y, z: v.z };
+            return Object.assign({}, v);
         },
         roundVector: (v) => {
             v.x = Math.round(v.x);

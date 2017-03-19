@@ -62,23 +62,17 @@ const CUBE_SHAPES = [
 // --------------------------------
 
 window.Tetris = {
-    currentPoints: 0,
-
-    sounds: {},
-
-    frameTime: 0,
-
-    cumulatedFrameTime: 0,
-
-    _lastFrameTime: Date.now(),
-
-    gameOver: false,
-
-    gameStepTime: 1000,
-
-    staticBlocks: [],
-
     init: function() {
+        this.currentPoints = 0;
+        this.sounds = {};
+        this.frameTime = 0;
+        this.cumulatedFrameTime = 0;
+        this._lastFrameTime = Date.now();
+        this.gameOver = false;
+        this.gameStepTime = 1000;
+        this.staticBlocks = [];
+        this.automatic = [];
+
         this.sounds.collision = document.getElementById("audio_collision");
         this.sounds.move = document.getElementById("audio_move");
         this.sounds.gameover = document.getElementById("audio_gameover");
@@ -112,6 +106,23 @@ window.Tetris = {
             event.preventDefault();
             this.start();
         });
+
+        // Decode
+        if (window.location.hash && window.location.hash.length > 1) {
+            try {
+                let decoded = atob(window.location.hash.substr(1));
+                for (let move of decoded.split(";")) {
+                    let ob = move.split(",");
+                    let shape = parseInt(ob[0]);
+                    let position = { x: parseInt(ob[1].split("|")[0]), y: parseInt(ob[1].split("|")[1]) };
+                    let rotation = { x: parseInt(ob[2].split("|")[0]), y: parseInt(ob[2].split("|")[1]), z: parseInt(ob[2].split("|")[2]) };
+
+                    this.automatic.push({ shape, position, rotation });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
     },
     start: function() {
         $("#menu").css("display", "none");
@@ -120,6 +131,10 @@ window.Tetris = {
         this.Block.generate();
         this.animate();
 
+        if (this.automatic.length > 0) {
+            this.gameStepTime = 60;
+            return;
+        }
         $("body").on('keydown', (event) => {
             let key = event.which || event.keyCode;
 
@@ -207,7 +222,7 @@ window.Tetris = {
 
     Utils: {
         cloneVector: function(v) {
-            return { x: v.x, y: v.y, z: v.z };
+            return Object.assign({}, v);
         },
         roundVector: function(v) {
             v.x = Math.round(v.x);
@@ -218,9 +233,16 @@ window.Tetris = {
 };
 
 Tetris.Block = {
-    position: {},
     generate: function() {
+        let data = null;
+
+        if (Tetris.automatic.length > 0) {
+            data = Tetris.automatic.pop();
+        }
         let type = Math.floor(Math.random() * (CUBE_SHAPES.length));
+        if (data !== null && 'shape' in data) {
+            type = data.shape;
+        }
         this.blockType = type;
 
         this.shape = [];
@@ -263,6 +285,11 @@ Tetris.Block = {
         this.mesh.overdraw = true;
 
         Tetris.scene.add(this.mesh);
+
+        if (data !== null && 'rotation' in data && 'position' in data) {
+            this.move(data.position.x - this.position.x, data.position.y - this.position.y, 0);
+            this.rotate(data.rotation.x, data.rotation.y, data.rotation.z);
+        }
     },
     rotate: function(x, y, z) {
         let oldRotation = Tetris.Utils.cloneVector(this.mesh.rotation);
@@ -291,7 +318,6 @@ Tetris.Block = {
         }
 
         if (Tetris.Board.testCollision(false) === COLLISION.WALL) {
-            console.log("collided");
             this.shape = oldShapes;
             this.mesh.rotation = oldRotation;
         }
@@ -313,7 +339,6 @@ Tetris.Block = {
         let collision = Tetris.Board.testCollision((z != 0));
 
         if (collision === COLLISION.WALL) {
-            console.log("moved: " + oldPosition.x + ", " + oldPosition.y + ", " + oldPosition.z + " -> " + this.mesh.position.x + ", " + this.mesh.position.y + ", " + this.mesh.position.z);
             this.position = oldPos;
             this.mesh.position = oldPosition;
         }
@@ -339,8 +364,8 @@ Tetris.Block = {
 };
 
 Tetris.Board = {
-    fields: [],
     init: function(_x, _y, _z) {
+        this.fields = [];
         for (let x = 0; x < _x; x++) {
             this.fields[x] = [];
             for (let y = 0; y < _y; y++) {
