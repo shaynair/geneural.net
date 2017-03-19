@@ -345,7 +345,6 @@ Tetris.Block = {
     },
 
     move: function(x, y, z) {
-        let oldPosition = Tetris.Utils.cloneVector(this.mesh.position);
         let oldPos = Tetris.Utils.cloneVector(this.position);
 
         this.mesh.position.x += x * BLOCK_SIZE;
@@ -361,7 +360,9 @@ Tetris.Block = {
 
         if (collision === COLLISION.WALL) {
             this.position = oldPos;
-            this.mesh.position = oldPosition;
+            this.mesh.position.x -= x * BLOCK_SIZE;
+            this.mesh.position.y -= y * BLOCK_SIZE;
+            this.mesh.position.z -= z * BLOCK_SIZE;
         }
         if (collision === COLLISION.GROUND) {
             this.hitBottom();
