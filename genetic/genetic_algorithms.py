@@ -1,6 +1,6 @@
 import random
 from run_simulation import Simulation
-totalWeights = 7
+totalWeights = 4
 temp = 2**totalWeights
 POPULATION_SIZE = temp + temp/10
 TOTAL_GENS = 100
@@ -26,15 +26,15 @@ class Chromosome(object):
 
 class GeneticAlgorithm(object):
 
-    def genScore(self, theWeights):
+    def genScore(self, weights):
         myMap = {}
         myMap['num_holes'] = weights[0]
-        myMap['num_gaps'] = weights[1]
-        myMap['max_height'] = weights[2]
-        myMap['avg_height'] = weights[3]
-        myMap['completed_lines'] = weights[4]
-        myMap['bumpiness'] = weights[5]
-        myMap['num_blocks'] = weights[6]
+        #myMap['num_gaps'] = weights[1]
+        #myMap['max_height'] = weights[2]
+        #myMap['avg_height'] = weights[3]
+        myMap['completed_lines'] = weights[1]
+        myMap['bumpiness'] = weights[2]
+        myMap['num_blocks'] = weights[3]
         ret = self.sim.simulate(myMap)
         return ret['score']
 
@@ -44,19 +44,23 @@ class GeneticAlgorithm(object):
             self.population.append(Chromosome(None,1))
         self.current_chromosome = 0
         self.current_generation = 1
-        self.next_generation()
         self.sim = Simulation()
+        self.totalScore = 0
+        self.next_generation()
 
     def next_generation(self):
         #where the gen algorithm goes
         print("__________________\n")
         print "GEN: ", self.current_generation
         population = self.population
+        self.totalScore = 0
         for i in population:
             i.games = 2
-            i.total_fitness = self.genScore()
+            i.total_fitness = self.genScore(i.weights)
+            self.totalScore += i.total_fitness
             #print i.avg_fitness()
         print "got scores"
+        print self.totalScore / POPULATION_SIZE
         top = self.getTop(population)
         weights = []
 
