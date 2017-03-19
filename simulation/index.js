@@ -3,7 +3,7 @@ const zerorpc = require('zerorpc');
 
 const server = new zerorpc.Server({
     simulate: function(heuristics, cb) {
-        console.log("Heuristics: ", heuristics);
+        console.log("Heuristics: ", JSON.parse(heuristics));
         cb(null, tetris.init(JSON.parse(heuristics)));
     }
 });

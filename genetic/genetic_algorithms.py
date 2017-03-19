@@ -1,17 +1,20 @@
 import random
+import time
 from run_simulation import Simulation
-totalWeights = 4
-temp = 2**totalWeights
-POPULATION_SIZE = temp + temp/10
-TOTAL_GENS = 100
+totalWeights = 2
+numTop = 3
+temp = numTop**totalWeights
+POPULATION_SIZE = temp + temp*4
+TOTAL_GENS = 1000
+
+
+def getRand(range=1):
+    return random.uniform(-range, range)
 
 class Chromosome(object):
 
     def avg_fitness(self):
         return self.total_fitness / self.games
-
-    def getRand(self):
-        return random.uniform(0,1)
 
     def __init__(self, weights, cond):
         self.weights = []
@@ -19,7 +22,7 @@ class Chromosome(object):
             self.weights = weights
         else:
             for i in range(totalWeights):
-                self.weights.append(self.getRand())
+                self.weights.append(getRand())
         self.total_fitness = 0
         self.games = 0
 
@@ -28,15 +31,18 @@ class GeneticAlgorithm(object):
 
     def genScore(self, weights):
         myMap = {}
-        myMap['num_holes'] = weights[0]
-        #myMap['num_gaps'] = weights[1]
-        #myMap['max_height'] = weights[2]
-        #myMap['avg_height'] = weights[3]
-        myMap['completed_lines'] = weights[1]
-        myMap['bumpiness'] = weights[2]
-        myMap['num_blocks'] = weights[3]
+        #myMap['num_holes'] = weights[0] #36, 0.12s
+        myMap['num_gaps'] = weights[0] #40, 0.06s
+        #myMap['max_height'] = weights[1] #36 very random don't even , 0.02s
+        #myMap['avg_height'] = weights[0] #36, slow af
+        myMap['completed_lines'] = weights[1] #38, 0.05s
+        #myMap['bumpiness'] = weights[0] # slow af
+        #MyMap['num_blocks'] = weights[3] #38, 0.1s
+        #MyMap['num_blocks_above_holes'] = weights[0] #???
+
+        t = time.time()
         ret = self.sim.simulate(myMap)
-        return ret['score']
+        return (time.time() - t, ret['score'])
 
     def __init__(self):
         self.population = []
@@ -54,14 +60,18 @@ class GeneticAlgorithm(object):
         print "GEN: ", self.current_generation
         population = self.population
         self.totalScore = 0
+        self.totalTime = 0
         for i in population:
-            i.games = 2
-            i.total_fitness = self.genScore(i.weights)
-            self.totalScore += i.total_fitness
+            i.games = 1
+            (i.total_fitness, i.time) = self.genScore(i.weights)
             #print i.avg_fitness()
         print "got scores"
-        print self.totalScore / POPULATION_SIZE
         top = self.getTop(population)
+        for i in top:
+            self.totalScore += i.total_fitness
+            self.totalTime += i.time
+        print self.totalScore / len(top)
+        print self.totalTime / len(top)
         weights = []
 
         #get n^k from breeding
@@ -96,8 +106,13 @@ class GeneticAlgorithm(object):
         print len(top)**numVars
         for i in range(len(top)**numVars):
             tempList = []
+            invert = random.randint(0,numVars)
+
             for j in range(numVars):
-                tempList.append(top[(i // (len(top) ** j)) % len(top)].weights[j])
+                w = top[(i // (len(top) ** j)) % len(top)].weights[j]
+                if random.uniform(0,1) < 0.2 and j == invert:
+                    w = -w
+                tempList.append(w)
             weightList.append(tempList)
         return weightList
 
@@ -108,7 +123,7 @@ class GeneticAlgorithm(object):
             self.next_generation()
 
     def getTop(self, population):
-        return sorted(population,key = lambda x: x.avg_fitness())[POPULATION_SIZE-4:]
+        return sorted(population,key = lambda x: x.avg_fitness())[-numTop:]
 
 
 
