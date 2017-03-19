@@ -59,12 +59,12 @@ const CUBE_SHAPES = [
 // --------------------------------
 
 window.Tetris = {
-    init: function(hash = window.location.hash) {
+    init: function(hash = window.location.hash, playable = true) {
         WIDTH = window.innerWidth;
         HEIGHT = window.innerHeight;
-        if (hash && hash.length > 0) {
-            WIDTH *= 0.8;
-            HEIGHT *= 0.6;
+        if (!playable || (hash && hash.length > 0)) {
+            WIDTH *= 0.9;
+            HEIGHT *= 0.55;
         }
 
         this.currentPoints = 0;
@@ -76,7 +76,8 @@ window.Tetris = {
         this.gameStepTime = 1000;
         this.staticBlocks = [];
         this.automatic = [];
-
+        this.playable = playable;
+        this.moveCount = 0;
 
         this.renderer = new THREE.WebGLRenderer();
         this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, WIDTH / HEIGHT, NEAR, FAR);
@@ -89,7 +90,9 @@ window.Tetris = {
         // start the renderer
         this.renderer.setSize(WIDTH, HEIGHT);
 
-        $("body").append($(this.renderer.domElement));
+        $("#game").remove();
+        $(this.renderer.domElement).attr("id", "game").css("margin", "0 auto");
+        $("#game-container").append($(this.renderer.domElement));
 
         this.Board.init(BOUNDS.splitX, BOUNDS.splitY, BOUNDS.splitZ);
 
@@ -101,7 +104,7 @@ window.Tetris = {
         ));
 
         this.render();
-        if (!hash || hash.length <= 1) {
+        if (playable && (!hash || hash.length <= 1)) {
             this.sounds.collision = document.getElementById("audio_collision");
             this.sounds.move = document.getElementById("audio_move");
             this.sounds.gameover = document.getElementById("audio_gameover");
@@ -112,26 +115,32 @@ window.Tetris = {
                 this.start();
             });
         } else {
-            // Decode
-            try {
-                let decoded = atob(hash.substr(1));
-                for (let move of decoded.split(";")) {
-                    let ob = move.split(",");
-                    let shape = parseInt(ob[0]);
-                    let position = { x: parseInt(ob[1].split("|")[0]), y: parseInt(ob[1].split("|")[1]) };
-                    let rotation = { x: parseInt(ob[2].split("|")[0]), y: parseInt(ob[2].split("|")[1]), z: parseInt(ob[2].split("|")[2]) };
-
-                    this.automatic.push({ shape, position, rotation });
+            if (hash && hash.length > 1) {
+                // Decode
+                try {
+                    let decoded = atob(hash);
+                    for (let move of decoded.split(";")) {
+                        if (move.length <= 0) {
+                            continue;
+                        }
+                        let ob = move.split(",");
+                        let shape = parseInt(ob[0]);
+                        let position = { x: parseInt(ob[1].split("|")[0]), y: parseInt(ob[1].split("|")[1]) };
+                        let rotation = { x: parseInt(ob[2].split("|")[0]), y: parseInt(ob[2].split("|")[1]), z: parseInt(ob[2].split("|")[2]) };
+                        this.automatic.push({ shape, position, rotation });
+                    }
+                } catch (e) {
+                    console.error(e);
+                    return;
                 }
-            } catch (e) {
-                console.error(e);
-                return;
+                this.start();
+            } else {
+                this.render();
             }
-            this.start();
         }
     },
     start: function() {
-        if (this.automatic.length === 0) {
+        if (!this.playable || this.automatic.length === 0) {
             $("#menu").css("display", "none");
             $("#points").css("display", "block");
         }
@@ -139,7 +148,7 @@ window.Tetris = {
         this.Block.generate();
         this.animate();
 
-        if (this.automatic.length > 0) {
+        if (!this.playable || this.automatic.length > 0) {
             this.gameStepTime = 60;
             return;
         }
@@ -207,8 +216,10 @@ window.Tetris = {
     },
     addPoints: function(n) {
         this.currentPoints += n;
-        $("#points").html(this.currentPoints);
-        this.sounds.score.play();
+        if (Tetris.playable) {
+            $("#points").html(this.currentPoints);
+            this.sounds.score.play();
+        }
     },
     addStaticBlock: function(x, y, z) {
         if (!this.staticBlocks.hasOwnProperty(x)) this.staticBlocks[x] = [];
@@ -245,7 +256,7 @@ Tetris.Block = {
         let data = null;
 
         if (Tetris.automatic.length > 0) {
-            data = Tetris.automatic.pop();
+            data = Tetris.automatic.shift();
         }
         let type = Math.floor(Math.random() * (CUBE_SHAPES.length));
         if (data !== null && 'shape' in data) {
@@ -282,8 +293,10 @@ Tetris.Block = {
 
         if (Tetris.Board.testCollision(true) === COLLISION.GROUND) {
             Tetris.gameOver = true;
-            $("#points").html("GAME OVER");
-            Tetris.sounds.gameover.play();
+            if (Tetris.playable) {
+                $("#points").html("GAME OVER");
+                Tetris.sounds.gameover.play();
+            }
         }
 
         this.mesh.position.x = (this.position.x - BOUNDS.splitX / 2) * BLOCK_SIZE / 2;
@@ -295,8 +308,8 @@ Tetris.Block = {
         Tetris.scene.add(this.mesh);
 
         if (data !== null && 'rotation' in data && 'position' in data) {
+            this.rotate(data.rotation.x * 90, data.rotation.y * 90, data.rotation.z * 90);
             this.move(data.position.x - this.position.x, data.position.y - this.position.y, 0);
-            this.rotate(data.rotation.x, data.rotation.y, data.rotation.z);
         }
     },
     rotate: function(x, y, z) {
@@ -352,9 +365,11 @@ Tetris.Block = {
         }
         if (collision === COLLISION.GROUND) {
             this.hitBottom();
-            Tetris.sounds.collision.play();
+            if (Tetris.playable) {
+                Tetris.sounds.collision.play();
+            }
             Tetris.Board.checkCompleted();
-        } else {
+        } else if (Tetris.playable) {
             Tetris.sounds.move.play();
         }
     },
@@ -363,6 +378,7 @@ Tetris.Block = {
             Tetris.addStaticBlock(this.position.x + i.x, this.position.y + i.y, this.position.z + i.z);
             Tetris.Board.fields[this.position.x + i.x][this.position.y + i.y][this.position.z + i.z] = FIELD.PETRIFIED;
         }
+        Tetris.moveCount++;
     },
     hitBottom: function() {
         this.petrify();
@@ -396,6 +412,7 @@ Tetris.Board = {
             }
 
             if (this.fields[i.x + posx][i.y + posy][i.z + posz - 1] === FIELD.PETRIFIED) {
+                //console.log("petrified " + (i.x + posx) + ", " + (i.y + posy) + ", " + (i.z + posz));
                 return ground_check ? COLLISION.GROUND : COLLISION.WALL;
             }
 

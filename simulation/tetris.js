@@ -4,7 +4,7 @@ const BOUNDS = {
     splitZ: 20
 };
 
-const INIT_Z = BOUNDS.splitZ;
+const INIT_Z = 15;
 
 const COLLISION = { NONE: 0, WALL: 1, GROUND: 2 };
 const FIELD = { EMPTY: 0, ACTIVE: 1, PETRIFIED: 2 };
@@ -121,7 +121,7 @@ let Tetris = {
                             position.z--;
                         }
                         let fields = this.Utils.cloneField(this.Board.fields);
-                        this.Block.petrify(shape, fields, position);
+                        this.Block.petrify(shape, fields, position, false);
                         moves.push({ rotation, position, fields });
                     }
                 }
@@ -366,7 +366,7 @@ Tetris.Block = {
         return shapes;
     },
     possibleRotations: function() {
-        let types = [90, -90, 180, 0];
+        let types = [0, 90, -90, 180];
         let coords = [
             [0, 0, 1],
             [0, 1, 0],
@@ -405,9 +405,12 @@ Tetris.Block = {
         }
         return false;
     },
-    petrify: function(shape = this.shape, fields = Tetris.Board.fields, position = this.position) {
+    petrify: function(shape = this.shape, fields = Tetris.Board.fields, position = this.position, other = true) {
         for (let i of shape) {
             fields[position.x + i.x][position.y + i.y][position.z + i.z] = FIELD.PETRIFIED;
+            //if (other) {
+            //    console.log("petrify " + (this.position.x + i.x) + ", " + (this.position.y + i.y) + ", " + (this.position.z + i.z));
+            //}
         }
     },
     hitBottom: function() {

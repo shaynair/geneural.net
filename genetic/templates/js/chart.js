@@ -1,5 +1,4 @@
 $(document).ready(function() {
-
     // Get the CSV and create the chart
     $.get('data/data.csv', function(csv) {
         $.getJSON('data/replays.json', function(replays) {
@@ -59,7 +58,7 @@ $(document).ready(function() {
                         point: {
                             events: {
                                 click: function(e) {
-                                    Tetris.init(replays[this.x - 1]);
+                                    Tetris.init(replays[this.x - 1], false);
                                 }
                             }
                         },

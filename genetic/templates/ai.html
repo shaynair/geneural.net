@@ -3,9 +3,11 @@
     <head>
         <title>Genetic Tetris</title>
 		<!-- Meta -->
-		<meta charset="utf-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta http-equiv="cache-control" content="no-cache" />
+		<meta http-equiv="expires" content="Mon, 22 Jul 2002 11:12:01 GMT" />
 
         <link rel="stylesheet" href="css/style.css"></link>
 		<link rel="stylesheet" type="text/css" href="https://www.highcharts.com/samples/static/highslide.css" />
@@ -16,15 +18,22 @@
 		<![endif]-->
 	</head>
     <body>
-        <script defer type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"></script><script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-		<script defer src="https://code.highcharts.com/highcharts.js"></script>
-		<script defer src="https://code.highcharts.com/modules/data.js"></script>
-		<script defer src="https://code.highcharts.com/modules/exporting.js"></script>
-		<script defer src="https://www.highcharts.com/samples/static/highslide-full.min.js"></script>
-		<script defer src="https://www.highcharts.com/samples/static/highslide.config.js" charset="utf-8"></script>
-        <script defer type="text/javascript" src="js/tetris.js"></script>
-        <script defer type="text/javascript" src="js/chart.js"></script>
-		
-		<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto; margin-top: 60%"></div>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"></script><script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+		<script src="https://code.highcharts.com/highcharts.js"></script>
+		<script src="https://code.highcharts.com/modules/data.js"></script>
+		<script src="https://code.highcharts.com/modules/exporting.js"></script>
+		<script src="https://www.highcharts.com/samples/static/highslide-full.min.js"></script>
+		<script src="https://www.highcharts.com/samples/static/highslide.config.js" charset="utf-8"></script>
+        <script type="text/javascript" src="js/tetris.js"></script>
+        <script type="text/javascript" src="js/chart.js"></script>
+		<div id="game-container" style="width: 90%; padding: 30px; height: 55%; margin: 0 auto; text-align: center">
+		</div>
+		<div style="width: 100%; position: absolute; top: 60%; height: 40%; margin: 0 auto; text-align: center">
+			<div id="container" style="width: 90%; height: 90%; margin: 0 auto"></div>
+		</div>
+		<script>
+			$(document).ready(Tetris.init.bind(Tetris, null, false));
+			$(window).on('resize', Tetris.init.bind(Tetris, null, false));
+		</script>
     </body>
 </html>

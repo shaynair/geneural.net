@@ -87,8 +87,10 @@ class GeneticAlgorithm(object):
             self.totalScore += i.avg_fitness()
             self.totalTime += i.time
             print("replay " + str(i.avg_fitness()) + " with " + i.code)
+            print(i.weights)
             ret += str(i.avg_fitness()) + '\n'
             ret += i.code + '\n'
+            ret += str(i.weights) + '\n'
         ret += str(self.totalScore / len(top)) + '\n'
         print("score: " + str(self.totalScore / len(top)))
         print("time: " + str(self.totalTime / len(top)))
