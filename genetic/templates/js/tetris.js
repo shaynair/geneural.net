@@ -79,7 +79,13 @@ window.Tetris = {
         this.playable = playable;
         this.moveCount = 0;
 
-        this.renderer = new THREE.WebGLRenderer();
+        try {
+            this.renderer = new THREE.WebGLRenderer();
+        } catch (e) {
+            alert("You need a WebGL-enabled browser. Try the newest version of Firefox.");
+            return;
+        }
+        
         this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, WIDTH / HEIGHT, NEAR, FAR);
         this.scene = new THREE.Scene();
 
